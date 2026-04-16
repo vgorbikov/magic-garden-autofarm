@@ -49,7 +49,7 @@ It can... Harvest all day while you're doing something else (unless you're worki
 
 1. Open the MagicGarden game on you Discord.
 2. Place your character on the top left cell of your garden (the one where there is still a garden bed).
-3. Run the script and click on the Discord window with the game (this is necessary to activate the game window so that it responds to signals from the script. You have 5 seconds to do this)
+3. Run the script (`main.py`) and click on the Discord window with the game (this is necessary to activate the game window so that it responds to signals from the script. You have 5 seconds to do this)
 4. Enjoy!
 
 
