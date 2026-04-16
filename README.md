@@ -13,15 +13,19 @@ It can... Harvest all day while you're doing something else (unless you're worki
 - If the inventory is full, he sells out the entire harvest (not forgetting to check in the magazine if he found something new).
 - And again he walks all over your garden and looks for a crop that is ready for harvesting.
 
->[!note] The strategy 
-> You might have noticed that this algorithm works well only if you have a lot of shrubs that mature quickly enough (because the bot does not plant new plants). 
->
->One of the best options, in my opinion, is to plant all (or almost all) burro's tail (you can add some camellias and fast-maturing trees).
+> **The strategy**   
+> 
+>> You might have noticed that this algorithm works well only if you have a lot of shrubs that mature quickly enough (because the bot does not plant new plants). 
+> 
+>>One of the best options, in my opinion, is to plant all (or almost all) burro's tail (you can add some camellias and fast-maturing trees).
+> 
 
 ## Deployment
 
->[!warning] You need a Python
-> I recommended using python version 3.12 or later
+> **You need a Python**
+> 
+>> I recommended using python version 3.12 or later
+> 
 
 1. Clone repo
     ```bash
