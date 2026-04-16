@@ -24,7 +24,7 @@ class Platform(Enum):
 
 class GardenBot():
     def __init__(self, platform: Platform = Platform.DISCORD, start_point: tuple[int] = START_POINT):
-        self._gamescreen_box = gw.getWindowsWithTitle(Platform.value)[0].box
+        self._gamescreen_box = gw.getWindowsWithTitle(Platform.DISCORD.value)[0].box
         self._notification_area = Box(
             left = self._gamescreen_box.left,
             top = self._gamescreen_box.top,
@@ -119,15 +119,22 @@ class GardenBot():
         time.sleep(0.05)
 
     def endless_harvesting(self):
+        harv_check_limit = 10
         while True:
             for y in range(GARDEN_HEIGHT):
-                for x in range(GARDEN_WIDTH):
+                xrange = range(GARDEN_WIDTH) if y%2 == 0 else range(GARDEN_WIDTH-1, -1, -1)
+                for x in xrange:
                     self.move_to((x, y))
 
                     croop_available = True
                     while croop_available:
                         croop_available = self.harvest_croop()
-                        notify = check_notification(self._notification_area)
-                        if notify == GameNotification.INVENTORY_FULL:
-                            self.sell_croops()
+                        harv_check_limit -= 1
+                        if harv_check_limit <= 0:
+                            harv_check_limit = 10
+                            notify = check_notification(self._notification_area)
+                            if notify == GameNotification.INVENTORY_FULL:
+                                self.sell_croops()
+        
+            time.sleep(1)
         
