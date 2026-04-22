@@ -23,9 +23,12 @@ class GardenBot():
         # self._gamescreen_box = gw.getWindowsWithTitle(config.platform)[0].box
         self._gamescreen_box = get_window_position(config.platform)
 
-        gamescreen_shot = ui.screenshot(region=self._gamescreen_box)
-        gamescreen_shot.save('./screen_log/game_screen.png')
-        logger.debug("Finds a game window at {}; Screenshot saved", self._gamescreen_box)
+        # gamescreen_shot = ui.screenshot(region=self._gamescreen_box)
+        # gamescreen_shot.save('./screen_log/game_screen.png')
+        # logger.debug("Finds a game window at {}; Screenshot saved", self._gamescreen_box)
+
+        logger.debug("Configured bounds: {}", self._config.harvest_conf.bounds)
+        logger.debug("Configured excluded areas: {}", self._config.harvest_conf.exclude_areas)
 
         self._screen_center = (self._gamescreen_box.left + self._gamescreen_box.width//2,
                                self._gamescreen_box.top + self._gamescreen_box.height//2)
@@ -39,9 +42,9 @@ class GardenBot():
             top = self._gamescreen_box.top + self._gamescreen_box.height//2,
             width = self._gamescreen_box.width,
             height = self._gamescreen_box.height//2)
-        gamescreen_shot = ui.screenshot(region=self._button_area)
-        gamescreen_shot.save('./screen_log/button_area_screen.png')
-        logger.debug("Screenshot of button area saved", self._gamescreen_box)
+        # gamescreen_shot = ui.screenshot(region=self._button_area)
+        # gamescreen_shot.save('./screen_log/button_area_screen.png')
+        # logger.debug("Screenshot of button area saved", self._gamescreen_box)
 
         self._button_area_is_exact: bool = False
         self._current_point = self._config.start_position.tuple()
