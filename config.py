@@ -30,7 +30,7 @@ class HarvestingConfig():
         return cls(
             active=d['status'],
             bounds=LtRbBounds.from_dict(d['bounds']) if 'bounds' in d.keys() else None,
-            exclude_areas=[(lambda x: LtRbBounds.from_dict(x) if type(x) == dict else Point(*x))(b) for b in d['exclude_areas']]
+            exclude_areas=[(lambda x: LtRbBounds.from_dict(x) if type(x) == dict else Point(*x))(b) for b in d['exclude_areas']] if 'excluded_areas' in d.keys() else None
         )
 
 
