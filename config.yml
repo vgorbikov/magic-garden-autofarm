@@ -1,0 +1,33 @@
+platform: Discord # Discord | Browser
+ui_lang: RU # only RU supported right now
+start_position:
+  x: 0
+  y: 0
+instructions:
+  harvesting: 
+    status: on # on | off
+    # bounds:
+    #   lt: [1, 3]
+    #   rb: [8, 8]
+    exclude_areas:
+      - lt: [13, 8] # define area left top point
+        rb: [19, 9] # define area right bottom point
+      # - [1, 1]      # define single point
+  shopping:
+    status: on
+    monitored_positions:
+      - position: Chrysantenium 
+        max_count: 11
+        priority: 5
+      - position: Dragon Fruit
+        max_count: 10
+        priority: 3
+      - position: Cacao
+        max_count: 8
+        priority: 4
+      - position: Lychee
+        max_count: 9
+        priority: 2
+      - position: Sunflower
+        max_count: 10
+        priority: 1
