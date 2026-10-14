@@ -1,0 +1,3 @@
+auth:
+  user_name: Gorbikov Vadim #you username
+  saved_auth_state_path: "data/auth_state.json"
