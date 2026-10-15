@@ -1,3 +1,51 @@
 auth:
   user_name: Gorbikov Vadim #you username
   saved_auth_state_path: "data/auth_state.json"
+directives:
+  shop_items:
+    status: on
+    targets:
+      - shop: seed 
+        item: Carrot
+        item_limit: 1000
+      - shop: rain
+        item: Clover
+      - shop: snow
+        item: Snowdrop
+        item_limit: 300
+      - shop: egg
+        item: CommonEgg
+        item_limit: 1000
+      - shop: thunder
+        item: Milkcap
+        item_limit: 100
+      - shop: dawn
+        item: Ube
+        item_limit: 100
+      - shop: amber
+        item: Marigold
+        item_limit: 5
+      - shop: dawn
+        item: Dawnbreaker
+        item_limit: 500
+      - shop: amber 
+        item: Emberbloom
+        item_limit: 500
+      - shop: egg
+        item: MythicalEgg
+        item_limit: 3
+  weather_pet_teams_rotation:
+    status: on
+    weather_teams:
+      rain:
+        null
+      snow:
+        null 
+      thunder:
+        team_name: Test 
+      amber:
+        team_name: Test 
+      dawn:
+        team_name: Test
+      default_team:
+        team_name: Test

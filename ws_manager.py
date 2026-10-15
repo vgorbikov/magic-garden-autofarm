@@ -1,6 +1,8 @@
-from playwright.async_api import WebSocketRoute
+import asyncio
 import json
 from typing import Callable, List, Any
+
+from playwright.async_api import WebSocketRoute
 
 from log_manager import create_logger
 
@@ -12,6 +14,7 @@ class WSManager():
         self.page_ws: WebSocketRoute = None
         self.inbound_handlers: List[Callable[[str],Any]] = []
         self.outbound_handlers: List[Callable[[str],Any]] = []
+        self.is_ready: asyncio.Event = asyncio.Event()
 
         self.logger, self.listener = create_logger("data/logs/websocket_log.log", "wslog")
 
@@ -92,3 +95,9 @@ class WSManager():
 
         # Пропускаем сообщения страницы на сервер
         self.page_ws.on_message(self._apply_outbound_handlers)
+
+        # Помечаем менеджер как "не готов" в случае закрытия сокета
+        self.page_ws.on_close(lambda a, b : self.is_ready.clear())
+        self.server_ws.on_close(lambda a, b : self.is_ready.clear())
+        # помечаем менеджер как "готов"
+        self.is_ready.set()

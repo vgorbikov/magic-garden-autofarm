@@ -1,116 +1,15 @@
-import asyncio
 import json
 from typing import Dict, List, Any, Optional, Union
-from datetime import datetime
-from uuid import uuid4
 from enum import Enum
+import asyncio
 
 from jsonpatch import apply_patch
-from playwright.async_api import WebSocketRoute
 
-from ws_manager import WSManager
-from log_manager import create_logger
 from utils import ReprMixin
-from config import Config
+from ws_manager import WSManager
+from game.game_types import ToolId, EggId, Species, PetSpecies, DecorId, Unknown, Shops, ItemType
 
 
-
-class Unknown(Enum):
-    UNKNOWN = 'Unknown'
-
-
-class ItemType(Enum):
-    SEED = 'Seed'
-    PET = 'Pet'
-    PLANT = 'Plant'
-    TOOL = 'Tool'
-    DECOR = 'Decor'
-    EGG = 'Egg'
-    UNKNOWN = 'Unknown'
-
-    @classmethod
-    def _missing_(cls, value):
-        return cls.UNKNOWN
-
-
-class Species(Enum):
-    CARROT = 'Carrot'
-    BEET = 'Beet'
-    ECHEVERIA = 'Echeveria'
-    CACTUS = 'Cactus'
-    BAMBOO = 'Bamboo'
-    SUNFLOWER = 'Sunflower'
-    STARWEAVER = 'Starweaver'
-    UNKNOWN = 'Unknown'
-
-    @classmethod
-    def _missing_(cls, value):
-        return cls.UNKNOWN
-
-
-class ToolId(Enum):
-    WATERING_CAN = 'WateringCan'
-    PLANTER_POT = 'PlanterPot'
-    CROP_CLEANER = 'CropCleanser'
-    SHOVEL = 'Shovel'
-    UNKNOWN = 'Unknown'
-
-    @classmethod
-    def _missing_(cls, value):
-        return cls.UNKNOWN
-
-
-class DecorId(Enum):
-    FEEDING_TROUGH = 'FeedingTrough'
-    DECOR_SHED = 'DecorShed'
-    PET_HUTCH = 'PetHutch'
-    SEED_SILO = 'SeedSilo'
-    TOOL_SHACK = 'ToolShack'
-    UNKNOWN = 'Unknown'
-
-    @classmethod
-    def _missing_(cls, value):
-        return cls.UNKNOWN
-
-
-class EggId(Enum):
-    COMMON = 'CommonEgg'
-    UNCOMMON = 'UncommonEgg'
-    RARE = 'RareEgg'
-    LEGENDARY = 'LegendaryEgg'
-    MYTHTICAL = 'MythicalEgg'
-    UNKNOWN = 'Unknown'
-
-    @classmethod
-    def _missing_(cls, value):
-        return cls.UNKNOWN
-
-
-class PetSpecies(Enum):
-    WORM = 'Worm'
-    UNKNOWN = 'Unknown'
-
-    @classmethod
-    def _missing_(cls, value):
-        return cls.UNKNOWN
-
-
-class Shops(Enum):
-    SEED = 'seed'
-    EGG = 'egg'
-    TOOL = 'tool'
-    DECOR = 'decor'
-    RAIN = 'rain'
-    DAWN = 'dawn'
-    AMBER = 'amber'
-    SNOW = 'snow'
-    THUNDER = 'thunder'
-    UNKNOWN = 'Unknown'
-
-    @classmethod
-    def _missing_(cls, value):
-        return cls.UNKNOWN
-    
 
 class ShopPurchasePosition(ReprMixin):
     def __init__(self, raw_item_uid: Union[ToolId, EggId, Species, DecorId], count: int):
@@ -203,7 +102,7 @@ class ToolStock(AShopStock):
     @property
     def toolId(self) -> ToolId:
         if "toolId" in self._stock.keys():
-            return Species(self._stock["toolId"])
+            return ToolId(self._stock["toolId"])
         return None
     
     @property
@@ -215,7 +114,7 @@ class EggStock(AShopStock):
     @property
     def eggId(self) -> EggId:
         if "eggId" in self._stock.keys():
-            return Species(self._stock["eggId"])
+            return EggId(self._stock["eggId"])
         return None
     
     @property
@@ -440,18 +339,56 @@ class Player(ReprMixin):
 
 
 class GameState(ReprMixin):
-
-    def __init__(self, raw_fullstate: Dict, current_user_name: str):
-        self.__state = raw_fullstate
+    def __init__(self, ws_manager: WSManager, current_user_name: str):
+        self.__state: Dict = None
         self.__current_user_name: str = current_user_name
+        self.__ws = ws_manager
+        self.__ws.add_inbound_handler(self._state_monitor)
+        self.is_ready: asyncio.Event = asyncio.Event()
 
-    def upd_state(self, json_patches: List[Dict]):
+
+    def __upd_raw_state(self, json_patches: List[Dict]):
         apply_patch(self.__state, json_patches, in_place=True)
+
+
+    def __init_raw_state(self, fullstate: Dict):
+        self.__state = fullstate
+        self.is_ready.set()
+
 
     def save_raw_state(self, path: str):
         with open(path, 'w') as f:
             f.write(json.dumps(self.__state, indent=4))
+
+
+    def __check_msg_is_typed(self, msg: Any) -> bool:
+        try:
+            msg = json.loads(msg)
+        except json.JSONDecodeError:
+            return False
+        if isinstance(msg, dict):
+            if "type" in msg.keys():
+                return True
+        return False
     
+
+    def __decode_msg(self, msg: str) -> Dict:
+        msg = json.loads(msg)
+        return msg
+
+    
+    def _state_monitor(self, msg: str):
+        if self.__check_msg_is_typed(msg):
+            msg = self.__decode_msg(msg)
+            if msg["type"] == "Welcome":
+                self.__init_raw_state(msg["fullState"])
+            if msg["type"] == "RoomFrame":
+                if "state" not in msg.keys():
+                    pass
+                else:
+                    self.__upd_raw_state(msg["state"]["patches"])
+    
+
     @property
     def shops(self) -> Optional[List[Shop]]:
         if "shops" in self.__state["child"]["data"]:
@@ -499,103 +436,3 @@ class GameState(ReprMixin):
         if len(players_filter)==0:
             return None
         return players_filter[0]
-
-
-class Command():
-    def __init__(self, seq: int):
-        self.requestId = str(uuid4())
-        self.commandSequence = seq
-
-    def __build_command(self):
-        build = {
-            "scopePath": [
-                "Room",
-                "Quinoa"
-            ],
-            "type": "QuinoaCommand",
-            "requestId": self.requestId,
-            "commandSequence": self.commandSequence,
-            "command": {
-                "type": "PurchaseShopItem",
-                "shop": "seed",
-                "viewMode": "grid",
-                "item": {
-                    "itemType": "Seed",
-                    "species": "Carrot"
-                }
-            }
-        }
-
-    async def execute(self, server_ws, ):
-        pass
-
-
-
-class Game():
-    def __init__(self, config: Config):
-        self.state: GameState = None
-        self.ws_manager: WSManager = None
-        self.executed_command_sequence: int = 0
-        self.config: Config = config
-
-        self.logger, self.listener = create_logger(f'data/logs/game_log_{datetime.now().strftime("%d%m%Y_%H_%M_%S")}.log', "game")
-
-    def __check_msg_is_typed(self, msg: Any) -> bool:
-        try:
-            msg = json.loads(msg)
-        except json.JSONDecodeError:
-            return False
-        if isinstance(msg, dict):
-            if "type" in msg.keys():
-                return True
-        return False
-    
-    def __decode_msg(self, msg: str) -> Dict:
-        msg = json.loads(msg)
-        return msg
-
-    def set_ws_manager(self, manager: WSManager):
-        self.ws_manager = manager
-    
-    def handle_server_msg(self, msg: str):
-        if self.__check_msg_is_typed(msg):
-            msg = self.__decode_msg(msg)
-            self.logger.debug(f'[MSG HANDLED] type={msg["type"]}')
-            if msg["type"] == "Welcome":
-                self.state = GameState(msg["fullState"], self.config.auth.user_name)
-            if msg["type"] == "RoomFrame":
-                if "state" not in msg.keys():
-                    pass
-                else:
-                    self.state.upd_state(msg["state"]["patches"])
-            if "executedCommandSequence" in msg.keys():
-                if msg["executedCommandSequence"] > self.executed_command_sequence:
-                    self.executed_command_sequence = msg["executedCommandSequence"]
-
-    def buy_seed(self, item: Species, count: int):
-        command = {
-            "scopePath": [
-                "Room",
-                "Quinoa"
-            ],
-            "type": "QuinoaCommand",
-            "requestId": str(uuid4()),
-            "commandSequence": self.executed_command_sequence+1,
-            "command": {
-                "type": "PurchaseShopItem",
-                "shop": 'seed',
-                "viewMode": "grid",
-                "item": item.value,
-                "quantity": count
-            }
-        }
-        command = json.dumps(command)
-        self.ws_manager.send_message_to_server(command, sender='BOT')
-
-    async def loop_print_state(self):
-        while True:
-            if self.state:
-                if self.state.shops:
-                    print([s for s in self.state.shops if s.shopName==Shops.SEED])
-                    print('-'*30)
-            await asyncio.sleep(3)

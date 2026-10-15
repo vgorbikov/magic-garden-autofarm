@@ -2,11 +2,13 @@ import asyncio
 from typing import Dict, List
 
 from playwright.async_api import async_playwright, WebSocketRoute
-import json
 
+from game.state import GameState
 from ws_manager import WSManager
-from game import Game, Species
+from game.commands import CommandProvider, PurchaseShopItem
+from game.game_types import Shops, Species, ItemType
 from config import Config
+from bot import Bot
 
 
 STEALTH_SCRIPT = """
@@ -21,9 +23,9 @@ config = Config.loads_from_yaml('./config.yaml')
 async def main():
 
     ws_manager = WSManager()
-    game = Game(config=config)
-    ws_manager.add_inbound_handler(game.handle_server_msg)
-    game.set_ws_manager(ws_manager)
+    command_provider = CommandProvider(ws_manager=ws_manager)
+    game_state = GameState(ws_manager=ws_manager, current_user_name=config.auth.user_name)
+    bot = Bot(conf=config, game_state=game_state, command_provider=command_provider)
 
     async with async_playwright() as playwright:
         browser = await playwright.chromium.launch(headless=False)
@@ -44,15 +46,11 @@ async def main():
         await page.goto("https://magicgarden.gg/r/GKTQ")
 
 
-        await game.loop_print_state()
+        await asyncio.to_thread(input, 'press to start bot...')
+        directive_loop_task = asyncio.create_task(bot.run_directive_loop())
 
-        # await asyncio.to_thread(input, 'hold to buy...')
-        # game.buy_seed(Species.CARROT, 1)
-
-        await asyncio.to_thread(input, 'hold...')
-        game.state.save_raw_state("./data/game_saved_state.json")
-
-        # await browser.close()
+        await directive_loop_task
+        await browser.close()
 
 
 
