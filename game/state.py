@@ -17,7 +17,7 @@ class ShopPurchasePosition(ReprMixin):
         self.__count = count
 
     @property
-    def uid(self) -> Union[ToolId, EggId, Species, DecorId]:
+    def itemUName(self) -> Union[ToolId, EggId, Species, DecorId]:
         if self.__item_uid in [t.value for t in ToolId]:
             return ToolId(self.__item_uid)
         if self.__item_uid in [t.value for t in EggId]:
@@ -29,7 +29,7 @@ class ShopPurchasePosition(ReprMixin):
         return Unknown.UNKNOWN
     
     @property
-    def cout(self) -> int:
+    def count(self) -> int:
         return int(self.__count)
 
 
@@ -55,71 +55,91 @@ class ShopPurchases(ReprMixin):
         return [ShopPurchasePosition(p, c) for p, c in self.__purchases["purchases"].items()]
 
 
-class AShopStock(ReprMixin):
-    def __init__(self, raw_stock: Dict, current_user_purchases: ShopPurchases):
-        self._stock: dict = raw_stock
-        self.__current_user_purchases: ShopPurchases = current_user_purchases
+class Item(ReprMixin):
+    def __init__(self, raw_item: Dict, **kwargs):
+        self._item: Dict = raw_item
 
     @property
     def itemType(self) -> Optional[ItemType]:
-        if "itemType" in self._stock.keys():
-            return ItemType(self._stock["itemType"])
-        return None
-
-    @property
-    def initialStock(self) -> Optional[int]:
-        if "initialStock" in self._stock.keys():
-            return int(self._stock["initialStock"])
+        if "itemType" in self._item.keys():
+            return ItemType(self._item["itemType"])
         return None
     
     @property
-    def itemUName(self) -> Enum:
+    def itemUName(self) -> Union[Species, ToolId, DecorId, EggId]:
         pass
+
+
+class AShopItem(Item):
+    def __init__(self, current_user_purchases: ShopPurchases, **kwargs):
+        super().__init__(**kwargs)
+        self.__current_user_purchases: ShopPurchases = current_user_purchases
+
+    @property
+    def initialStock(self) -> Optional[int]:
+        if "initialStock" in self._item.keys():
+            return int(self._item["initialStock"])
+        return None
 
     @property
     def currentUserStock(self):
         if not self.__current_user_purchases:
             return self.initialStock
-        this_item_filter = [p for p in self.__current_user_purchases.purchases if p.uid==self.itemUName]
+        this_item_filter = [p for p in self.__current_user_purchases.purchases if p.itemUName==self.itemUName]
         if len(this_item_filter)==0:
             return self.initialStock
-        return self.initialStock - this_item_filter[0].cout
+        return self.initialStock - this_item_filter[0].count
 
 
-class SeedStock(AShopStock):
+class Seed(Item):
     @property
     def species(self) -> Species:
-        if "species" in self._stock.keys():
-            return Species(self._stock["species"])
+        if "species" in self._item.keys():
+            return Species(self._item["species"])
         return None
     
     @property
     def itemUName(self) -> Species:
         return self.species
+    
 
-
-class ToolStock(AShopStock):
+class Tool(Item):
     @property
     def toolId(self) -> ToolId:
-        if "toolId" in self._stock.keys():
-            return ToolId(self._stock["toolId"])
+        if "toolId" in self._item.keys():
+            return ToolId(self._item["toolId"])
         return None
     
     @property
     def itemUName(self) -> ToolId:
         return self.toolId
+    
 
-
-class EggStock(AShopStock):
+class Egg(Item):
     @property
     def eggId(self) -> EggId:
-        if "eggId" in self._stock.keys():
-            return EggId(self._stock["eggId"])
+        if "eggId" in self._item.keys():
+            return EggId(self._item["eggId"])
         return None
     
     @property
     def itemUName(self) -> EggId:
         return self.eggId
+
+
+class SeedInShop(Seed, AShopItem):
+    def __init__(self, raw_item: Dict, current_user_purchases: ShopPurchases):
+        super().__init__(raw_item=raw_item, current_user_purchases=current_user_purchases)
+
+
+class ToolInShop(Tool, AShopItem):
+    def __init__(self, raw_item: Dict, current_user_purchases: ShopPurchases):
+        super().__init__(raw_item=raw_item, current_user_purchases=current_user_purchases)
+
+
+class EggInShop(Egg, AShopItem):
+    def __init__(self, raw_item: Dict, current_user_purchases: ShopPurchases):
+        super().__init__(raw_item=raw_item, current_user_purchases=current_user_purchases)
 
 
 class Shop(ReprMixin):
@@ -133,15 +153,15 @@ class Shop(ReprMixin):
         return self.__shop_name
 
     @property
-    def inventory(self) -> Optional[List[Union[SeedStock, ToolStock, EggStock]]]:
+    def inventory(self) -> Optional[List[Union[SeedInShop, ToolInShop, EggInShop]]]:
         if "inventory" in self.__shop.keys():
             all_items = self.__shop["inventory"]
             user_purchases = self.__current_user_purchases
             if self.restockId != self.__current_user_purchases.restockId:
                 user_purchases = None
-            seeds = [SeedStock(s, user_purchases) for s in all_items if s["itemType"]==ItemType.SEED.value]
-            tools = [ToolStock(s, user_purchases) for s in all_items if s["itemType"]==ItemType.TOOL.value]
-            eggs = [EggStock(s, user_purchases) for s in all_items if s["itemType"]==ItemType.EGG.value]
+            seeds = [SeedInShop(s, user_purchases) for s in all_items if s["itemType"]==ItemType.SEED.value]
+            tools = [ToolInShop(s, user_purchases) for s in all_items if s["itemType"]==ItemType.TOOL.value]
+            eggs = [EggInShop(s, user_purchases) for s in all_items if s["itemType"]==ItemType.EGG.value]
             return seeds + tools + eggs
         return None
 
@@ -165,14 +185,7 @@ class Shop(ReprMixin):
 
 
 
-class Item(ReprMixin):
-    def __init__(self, raw_item: Dict):
-        self._item: Dict = raw_item
-
-    @property
-    def itemType(self) -> ItemType:
-        return ItemType(self._item["itemType"])
-    
+class ItemWithId(Item):
     @property
     def id(self) -> Optional[str]:
         if "id" in self._item.keys():
@@ -214,7 +227,7 @@ class PlantSlot(ReprMixin):
         return None
 
 
-class Plant(Item):
+class Plant(ItemWithId):
     @property
     def species(self) -> Optional[Species]:
         if "species" in self._item.keys():
@@ -227,7 +240,7 @@ class Plant(Item):
         return None
         
 
-class Pet(Item):
+class Pet(ItemWithId):
     @property
     def petSpecies(self) -> PetSpecies:
         if "petSpecies" in self._item.keys():
