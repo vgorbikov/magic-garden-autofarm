@@ -121,7 +121,7 @@ class CommandProvider():
         msg = self.__decode_msg(msg)
         if "executedCommandSequence" in msg.keys():
                 actual_seq = msg["executedCommandSequence"]
-                if  actual_seq > self.actual_executed_sequence:
+                if  actual_seq != self.actual_executed_sequence:
                     self.actual_executed_sequence = actual_seq
 
     def _monitor_results(self, msg: str):
@@ -141,4 +141,5 @@ class CommandProvider():
         self.active_commands[command.requestId] = (result, command)
         self.ws.send_message_to_server(command.build_command(), "COMMAND PROVIDER")
         real_result = await result
+        self.actual_executed_sequence += 1
         return real_result

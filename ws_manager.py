@@ -1,6 +1,7 @@
 import asyncio
 import json
 from typing import Callable, List, Any
+from datetime import datetime, timezone
 
 from playwright.async_api import WebSocketRoute
 
@@ -16,7 +17,7 @@ class WSManager():
         self.outbound_handlers: List[Callable[[str],Any]] = []
         self.is_ready: asyncio.Event = asyncio.Event()
 
-        self.logger, self.listener = create_logger("data/logs/websocket_log.log", "wslog")
+        self.logger, self.listener = create_logger(f"data/logs/websocket_log_{datetime.now().strftime("%d-%m-%Y_%H-%M-%S")}.log", "wslog")
 
 
     def _try_pretty_msg(self, msg):
@@ -87,6 +88,7 @@ class WSManager():
         '''
         Инициализировать веб-сокет для управления
         '''
+        self.logger.info(f'OPEN SOCKET AT URL: {ws.url}')
         self.page_ws = ws
         self.server_ws: WebSocketRoute = ws.connect_to_server()
 
