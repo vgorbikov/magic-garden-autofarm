@@ -91,6 +91,32 @@ class PurchaseShopItem(ACommand):
             }
         }
         return json.dumps(command)
+    
+
+class ApplyPetTeamResult(ACommandResult):
+    commandType: CommandType = CommandType.APPLY_PET_TEAM
+
+
+class ApplyPetTeam(ACommand):
+    def __init__(self, teamId: str):
+        super().__init__(type=CommandType.APPLY_PET_TEAM)
+        self.team_id = teamId
+
+    def build_command(self):
+        command = {
+            "scopePath": [
+                "Room",
+                "Quinoa"
+            ],
+            "type": "QuinoaCommand",
+            "requestId": self.requestId,
+            "commandSequence": self.commandSequence,
+            "command": {
+                "type": self.comand_type.value,
+                "teamId": self.team_id
+            }
+        }
+        return json.dumps(command)
 
 
 class CommandProvider():

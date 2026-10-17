@@ -48,6 +48,21 @@ class PetTeamDefinition():
 
 
 @dataclass
+class SituationshipTeamsConf():
+    on_sell_crops: PetTeamDefinition
+    on_harvest: PetTeamDefinition
+    on_sell_pets: PetTeamDefinition
+
+    def __post_init__(self):
+        if not isinstance(self.on_sell_crops, PetTeamDefinition):
+            self.on_sell_crops = PetTeamDefinition(**self.on_sell_crops)
+        if not isinstance(self.on_harvest, PetTeamDefinition):
+            self.on_harvest = PetTeamDefinition(**self.on_harvest)
+        if not isinstance(self.on_sell_pets, PetTeamDefinition):
+            self.on_sell_pets = PetTeamDefinition(**self.on_sell_pets)
+
+
+@dataclass
 class WeatherTeamsConf():
     rain: Optional[PetTeamDefinition] = None
     snow: Optional[PetTeamDefinition] = None
@@ -82,15 +97,28 @@ class WeatherPetTeamRotationDirectiveConf():
 
 
 @dataclass
+class SituationshipPetRotationDirectiveConf():
+    status: bool 
+    situationship_teams: SituationshipTeamsConf
+
+    def __post_init__(self):
+        if not isinstance(self.situationship_teams, SituationshipTeamsConf):
+            self.situationship_teams = SituationshipTeamsConf(**self.situationship_teams)
+
+
+@dataclass
 class DirectivesConf():
     shop_items: ShopItemsDirectiveConf
     weather_pet_teams_rotation: WeatherPetTeamRotationDirectiveConf
+    situationsip_pet_team_rotation: SituationshipPetRotationDirectiveConf
 
     def __post_init__(self):
         if not isinstance(self.shop_items, ShopItemsDirectiveConf):
             self.shop_items = ShopItemsDirectiveConf(**self.shop_items)
         if not isinstance(self.weather_pet_teams_rotation, WeatherPetTeamRotationDirectiveConf):
             self.weather_pet_teams_rotation = WeatherPetTeamRotationDirectiveConf(**self.weather_pet_teams_rotation)
+        if not isinstance(self.situationsip_pet_team_rotation, SituationshipPetRotationDirectiveConf):
+            self.situationsip_pet_team_rotation = SituationshipPetRotationDirectiveConf(**self.situationsip_pet_team_rotation)
 
 
 @dataclass

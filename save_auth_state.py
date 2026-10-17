@@ -22,7 +22,7 @@ async def run(playwright: Playwright):
     await asyncio.to_thread(input, "Нажмите Enter для сохранения состояния... ")
     
     # Сохраняем ВСЕ состояние: куки (включая сессионные) + localStorage
-    await context.storage_state(path="./auth_state.json")
+    await context.storage_state(path="./data/auth_state.json")
 
     await browser.close()
 

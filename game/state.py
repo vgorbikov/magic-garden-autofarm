@@ -1,13 +1,14 @@
 import json
 from typing import Dict, List, Any, Optional, Union
-from enum import Enum
+from enum import Enum, member
 import asyncio
+import inspect
 
 from jsonpatch import apply_patch
 
 from utils import ReprMixin
 from ws_manager import WSManager
-from game.game_types import ToolId, EggId, Species, PetSpecies, DecorId, Unknown, Shops, ItemType
+from game.game_types import ToolId, EggId, Species, PetSpecies, DecorId, Unknown, Shops, ItemType, Weather
 
 
 
@@ -125,11 +126,46 @@ class Egg(Item):
     @property
     def itemUName(self) -> EggId:
         return self.eggId
+    
+class EggInInventory(Egg):
+    @property
+    def quantity(self) -> Optional[int]:
+        if "quantity" in self._item.keys():
+            return int(self._item["quantity"])
+        return None
 
 
 class SeedInShop(Seed, AShopItem):
     def __init__(self, raw_item: Dict, current_user_purchases: ShopPurchases):
         super().__init__(raw_item=raw_item, current_user_purchases=current_user_purchases)
+
+
+class SeedInInventory(Seed):
+    @property
+    def quantity(self) -> Optional[int]:
+        if "quantity" in self._item.keys():
+            return int(self._item["quantity"])
+        return None
+
+
+class ToolInInventory(Tool):
+    @property
+    def quantity(self) -> Optional[int]:
+        if "quantity" in self._item.keys():
+            return int(self._item["quantity"])
+        return None
+    
+
+class RemainedTool(Tool):
+    @property
+    def remainingActiveSeconds(self) -> Optional[int]:
+        if "remainingActiveSeconds" in self._item.keys():
+            return int(self._item["remainingActiveSeconds"])
+        return None
+
+
+class RemainedToolInInventory(ToolInInventory, RemainedTool):
+    pass
 
 
 class ToolInShop(Tool, AShopItem):
@@ -270,6 +306,40 @@ class Pet(ItemWithId):
         if "xp" in self._item.keys():
             return float(self._item["xp"])
         return None
+    
+
+class PetTeamMember(ReprMixin):
+    def __init__(self, raw_member: Dict):
+        self._member: Dict = raw_member
+
+    @property
+    def petId(self) -> str:
+        return self._member["petId"]
+    
+    @property
+    def petSpecies(self) -> PetSpecies:
+        return PetSpecies(self._member["petSpecies"])
+    
+    @property
+    def name(self) -> Optional[str]:
+        return self._member["name"]
+    
+
+class PetTeam(ReprMixin):
+    def __init__(self, raw_team: Dict):
+        self._team: Dict = raw_team
+
+    @property
+    def id(self) -> str:
+        return self._team["id"]
+    
+    @property
+    def name(self) -> Optional[str]:
+        return self._team["name"]
+    
+    @property
+    def members(self) -> List[PetTeamMember]:
+        return [PetTeamMember(m) for m in self._team["members"]]
 
 
 class Storage(ReprMixin):
@@ -289,11 +359,15 @@ class Storage(ReprMixin):
         return None
 
     @property
-    def items(self) -> Optional[List[Union[Pet, Plant]]]:
+    def items(self) -> Optional[List[Union[Pet, Plant, SeedInInventory, ToolInInventory, RemainedToolInInventory, EggInInventory]]]:
         if "items" in self.__storage.keys():
-            pets = [Pet(p) for p in self.__storage["items"] if p["itemType"]==ItemType.PET]
-            plants = [Plant(p) for p in self.__storage["items"] if p["itemType"]==ItemType.PLANT]
-            return pets + plants
+            pets = [Pet(p) for p in self.__storage["items"] if p["itemType"]==ItemType.PET.value]
+            plants = [Plant(p) for p in self.__storage["items"] if p["itemType"]==ItemType.PLANT.value]
+            seeds = [SeedInInventory(s) for s in self.__storage["items"] if s["itemType"]==ItemType.SEED.value]
+            eggs = [EggInInventory(s) for s in self.__storage["items"] if s["itemType"]==ItemType.EGG.value]
+            tools = [ToolInInventory(p) for p in self.__storage["items"] if p["itemType"]==ItemType.TOOL.value and "remainingActiveSeconds" not in p.keys()]
+            remained_tools = [RemainedToolInInventory(p) for p in self.__storage["items"] if p["itemType"]==ItemType.TOOL.value and "remainingActiveSeconds" in p.keys()]
+            return pets + plants + seeds + tools + remained_tools + eggs
         return None
 
 
@@ -321,17 +395,21 @@ class Player(ReprMixin):
         return None
 
     @property
-    def inventory(self) -> List[Union[Plant, Pet]]:
+    def inventory(self) -> List[Union[Plant, Pet, SeedInInventory, ToolInInventory, RemainedToolInInventory, EggInInventory]]:
         if "inventory" in self.__slots["data"].keys():
             if "items" in self.__slots["data"]["inventory"].keys():
-                plants = [Plant(p) for p in self.__slots["data"]["inventory"]["items"] if p["itemType"]==ItemType.PLANT.value]
                 pets = [Pet(p) for p in self.__slots["data"]["inventory"]["items"] if p["itemType"]==ItemType.PET.value]
-                return plants + pets
+                plants = [Plant(p) for p in self.__slots["data"]["inventory"]["items"] if p["itemType"]==ItemType.PLANT.value]
+                seeds = [SeedInInventory(s) for s in self.__slots["data"]["inventory"]["items"] if s["itemType"]==ItemType.SEED.value]
+                eggs = [EggInInventory(s) for s in self.__slots["data"]["inventory"]["items"] if s["itemType"]==ItemType.EGG.value]
+                tools = [ToolInInventory(p) for p in self.__slots["data"]["inventory"]["items"] if p["itemType"]==ItemType.TOOL.value and "remainingActiveSeconds" not in p.keys()]
+                remained_tools = [RemainedToolInInventory(p) for p in self.__slots["data"]["inventory"]["items"] if p["itemType"]==ItemType.TOOL.value and "remainingActiveSeconds" in p.keys()]
+                return plants + pets + seeds + tools + remained_tools + eggs
             
         return None
 
     @property
-    def storages(self) -> Storage:
+    def storages(self) -> List[Storage]:
         if "inventory" in self.__slots["data"].keys():
             if "storages" in self.__slots["data"]["inventory"].keys():
                 return [Storage(s) for s in self.__slots["data"]["inventory"]["storages"]]
@@ -349,6 +427,10 @@ class Player(ReprMixin):
         if "shopPurchases" in self.__slots["data"].keys():
             return [ShopPurchases(raw_purchases=purchases, raw_shop_name=shop_name) for shop_name, purchases in self.__slots["data"]["shopPurchases"].items()]
         return None
+    
+    @property
+    def petTeams(self) -> List[PetTeam]:
+        return [PetTeam(t) for t in self.__slots["data"]["petTeams"]]
 
 
 class GameState(ReprMixin):
@@ -366,7 +448,6 @@ class GameState(ReprMixin):
 
     def __init_raw_state(self, fullstate: Dict):
         self.__state = fullstate
-        self.is_ready.set()
 
 
     def save_raw_state(self, path: str):
@@ -397,10 +478,17 @@ class GameState(ReprMixin):
                 self.__init_raw_state(msg["fullState"])
             if msg["type"] == "RoomFrame":
                 if "state" not in msg.keys():
-                    pass
+                    return
                 else:
                     self.__upd_raw_state(msg["state"]["patches"])
+                    if not self.is_ready.is_set() and not self.players is None:
+                        self.is_ready.set()
     
+
+    @property
+    def currentWeather(self):
+        return Weather(self.__state["child"]["data"]["weather"])
+
 
     @property
     def shops(self) -> Optional[List[Shop]]:

@@ -111,3 +111,16 @@ class Shops(Enum):
 class CommandType(Enum):
     HARVEST_CROP = 'HarvestCrop'
     PURCHASE_SHOP_ITEM = 'PurchaseShopItem'
+    APPLY_PET_TEAM = 'ApplyPetTeam'
+
+
+class Weather(Enum):
+    CLEAR = None
+    FROST = 'Frost'
+    RAIN = 'Rain'
+    THUNDERSTORM = 'Thunderstorm'
+    UNKNOWN = 'Unknown'
+
+    @classmethod
+    def _missing_(cls, value):
+        return cls.UNKNOWN

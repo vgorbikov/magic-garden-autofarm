@@ -1,14 +1,13 @@
 import asyncio
 from typing import Dict, List
 
-from playwright.async_api import async_playwright, WebSocketRoute
+from playwright.async_api import async_playwright, WebSocketRoute, BrowserContext
 
 from game.state import GameState
 from ws_manager import WSManager
-from game.commands import CommandProvider, PurchaseShopItem
-from game.game_types import Shops, Species, ItemType
+from game.commands import CommandProvider
 from config import Config
-from bot import Bot
+from bot.bot import Bot
 
 
 STEALTH_SCRIPT = """
@@ -20,6 +19,11 @@ Object.defineProperty(navigator, 'webdriver', {
 config = Config.loads_from_yaml('./config.yaml')
 
 
+async def state_saver(context: BrowserContext):
+    while True:
+        await context.storage_state(path="./data/auth_state.json")
+        await asyncio.sleep(60)
+
 async def main():
 
     ws_manager = WSManager()
@@ -28,7 +32,7 @@ async def main():
     bot = Bot(conf=config, game_state=game_state, command_provider=command_provider)
 
     async with async_playwright() as playwright:
-        browser = await playwright.chromium.launch(headless=False)
+        browser = await playwright.chromium.launch(headless=True)
 
         context = await browser.new_context(
             storage_state="./data/auth_state.json",
@@ -46,10 +50,14 @@ async def main():
         await page.goto("https://magicgarden.gg/r/GKTQ")
 
 
-        await asyncio.to_thread(input, 'press to start bot...')
-        directive_loop_task = asyncio.create_task(bot.run_directive_loop())
+        await bot.run()
 
-        await directive_loop_task
+        await asyncio.to_thread(input, "")
+
+        bot.stop()
+
+        # await state_saver(context=context)
+        
         await browser.close()
 
 
