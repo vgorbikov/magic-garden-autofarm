@@ -32,7 +32,7 @@ async def main():
     bot = Bot(conf=config, game_state=game_state, command_provider=command_provider)
 
     async with async_playwright() as playwright:
-        browser = await playwright.chromium.launch(headless=True)
+        browser = await playwright.chromium.launch(headless=False)
 
         context = await browser.new_context(
             storage_state="./data/auth_state.json",
@@ -50,7 +50,7 @@ async def main():
         await page.goto("https://magicgarden.gg/r/GKTQ")
 
 
-        await bot.run()
+        # await bot.run()
 
         await asyncio.to_thread(input, "")
 

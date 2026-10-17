@@ -1,60 +1,50 @@
-# Magic Garden autofarm bot
-The python autofarm bot for [MagicGarden game](https://magicgarden.gg/r/GKTQ?mc_source=router)
+# Magic Garden Bot
+The python bot for [MagicGarden game](https://magicgarden.gg/r/GKTQ)
 
 
 ## What a bot can do
 
-It can... Harvest all day while you're doing something else (unless you're working on a PC and preventing the bot from doing its job)!
+At the moment, the Bot supports a number of directives. Directives can be added by you, if desired.
 
-### The algorithm 
+The currently supported directives are listed below
 
-- The bot walks all over your garden
-- If the bot sees that something is ripe, the bot will harvest it! (...and move on because it has a job)
-- If the inventory is full, he sells out the entire harvest (not forgetting to check in the magazine if he found something new).
-- And again he walks all over your garden and looks for a crop that is ready for harvesting.
+### Shop Items
 
-> **The strategy**   
-> 
->> You might have noticed that this algorithm works well only if you have a lot of shrubs that mature quickly enough (because the bot does not plant new plants). 
-> 
->>One of the best options, in my opinion, is to plant all (or almost all) burro's tail (you can add some camellias and fast-maturing trees).
-> 
+Bot monitor shop stocks and buy items which you select.
 
-## Deployment
+It may be eggs, seeds, tools and decor.
 
-> **You need a Python**
-> 
->> I recommended using python version 3.12 or later
-> 
+### Weather pet teams rotation
 
-1. Clone repo
-    ```bash
-    git clone https://github.com/vgorbikov/magic-garden-autofarm.git
-    ```
-2. Go to the project folder
-    ```
-    cd magic-garden-autofarm
-    ```
-3. Create a virtual environment
-   ```bash
-   python -m venv env
-   ```
-4. Install dependences
-    ```bash
-    pip install -r requirements.txt
-    ```
+Bot monitor a weather and set pet team which you select to this weather.
 
+>Pet team must have a name, to can be selected
 
-## How to use it
+## Configuration
 
-1. Open the MagicGarden game on you Discord.
-2. Place your character on the top left cell of your garden (the one where there is still a garden bed).
-3. Run the script (`main.py`) and click on the Discord window with the game (this is necessary to activate the game window so that it responds to signals from the script. You have 5 seconds to do this)
-4. Enjoy!
+All directives configurating in `config.yaml` file. You can see emy example in repo.
 
+## Auth
 
-## How it works
+For working, bot needs a auth in you profile. Now you must start a `save_auth_state.py` script for do it. Program opens a browser window? you must login in you account any way and press `Enter` in terminal. Auth session will be saved in you local repo.
 
-This project uses `pyautogui` (with `opencv`) to recognize interface elements (harvest buttons, notifications) and `pydirectinput` for keyboard and mouse input.
+## Usage
 
-This way, we do not interfere with the MagicGarden API (this makes the program more complex, but it reduces the likelihood of account blocking). It also imposes restrictions on its operation in the background - it emulates input devices, and therefore you will not be able to work at the same PC at the same time as it, as you will compete for the input stream.
+Write all settings in `config.yaml` file and starts `main.py` file. Bot starts working!
+
+>You must have python on you PC to starts it.
+
+While bot working, you dont must play in opened browser window. If you want to join game youself, off the Bot and join to game.
+
+>To off the Bot, press `Enter` in terminal.
+
+## To Do
+
+My plans to upgrade the Bot:
+- Do useful console interface
+- Adding reloading on errors, game updates and any incedents
+- Adding directives:
+  - Pet feeding
+  - Farm dust with common eggs growing
+  - Selective crop harvesting and selling
+  - Situationship pet teams rotation
