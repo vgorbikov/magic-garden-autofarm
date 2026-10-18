@@ -50,7 +50,7 @@ async def main():
         await page.goto("https://magicgarden.gg/r/GKTQ")
 
 
-        # await bot.run()
+        await bot.run()
 
         await asyncio.to_thread(input, "")
 
