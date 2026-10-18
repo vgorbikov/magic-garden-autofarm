@@ -16,6 +16,7 @@ class ACommand(ABC):
         self.commandSequence = 0
         self.comand_type: CommandType = type
         self.result: ACommandResult = None
+        self._future: asyncio.Future = asyncio.get_running_loop().create_future()
         self.result_baseclass = ACommandResult
 
 
@@ -24,6 +25,7 @@ class ACommand(ABC):
             self.result = FailResult(**raw_result)
         else:
             self.result = self.result_baseclass(**raw_result)
+        self._future.set_result(self.result)
 
     def set_sequence(self, seq: int):
         self.commandSequence = seq
@@ -122,7 +124,7 @@ class ApplyPetTeam(ACommand):
 class CommandProvider():
     def __init__(self, ws_manager: WSManager):
         self.ws = ws_manager
-        self.active_commands: Dict[str, Tuple[asyncio.Future, ACommand]] = dict()
+        self.active_commands: Dict[str,  ACommand] = dict()
         self.actual_executed_sequence: int = 0
         self.ws.add_inbound_handler(self._monitor_results)
         self.ws.add_inbound_handler(self._monitor_command_sequence)
@@ -156,16 +158,23 @@ class CommandProvider():
         msg = self.__decode_msg(msg)
         if msg["type"] == 'QuinoaCommandResult':
             if msg["requestId"] in self.active_commands.keys():
-                command_waiters = self.active_commands[msg["requestId"]]
-                command_waiters[1].set_result(msg)
-                command_waiters[0].set_result(command_waiters[1].result)
+                command = self.active_commands[msg["requestId"]]
+                command.set_result(msg)
                 self.active_commands.pop(msg["requestId"])
 
     async def execute(self, command: ACommand) -> ACommandResult:
         command.set_sequence(self.actual_executed_sequence + 1)
-        result = asyncio.get_running_loop().create_future()
-        self.active_commands[command.requestId] = (result, command)
-        self.ws.send_message_to_server(command.build_command(), "COMMAND PROVIDER")
-        real_result = await result
         self.actual_executed_sequence += 1
-        return real_result
+        self.active_commands[command.requestId] = command
+        self.ws.send_message_to_server(command.build_command(), "COMMAND PROVIDER")
+        try:
+            result = await asyncio.wait_for(command._future, timeout=5)
+        except:
+            result = FailResult(
+                requestId=command.requestId,
+                ok=False,
+                commandType=command.comand_type,
+                type="QuinoaCommand",
+                code="Future timeout"
+            )
+        return result
