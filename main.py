@@ -29,10 +29,10 @@ async def main():
     ws_manager = WSManager()
     command_provider = CommandProvider(ws_manager=ws_manager)
     game_state = GameState(ws_manager=ws_manager, current_user_name=config.auth.user_name)
-    bot = Bot(conf=config, game_state=game_state, command_provider=command_provider)
+    bot = Bot(conf=config.bot, game_state=game_state, command_provider=command_provider)
 
     async with async_playwright() as playwright:
-        browser = await playwright.chromium.launch(headless=False)
+        browser = await playwright.chromium.launch(headless=config.bot.headless_mode)
 
         context = await browser.new_context(
             storage_state="./data/auth_state.json",
@@ -47,7 +47,7 @@ async def main():
             lambda ws: ws_manager.set_websocket(ws),
         )
 
-        await page.goto("https://magicgarden.gg/r/GKTQ")
+        await page.goto(f"{config.auth.base_game_path}{config.auth.room_id}")
 
 
         await bot.run()

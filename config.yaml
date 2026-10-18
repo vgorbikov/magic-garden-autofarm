@@ -1,58 +1,62 @@
 auth:
-  user_name: Gorbikov Vadim #you username
-  saved_auth_state_path: "data/auth_state.json"
-directives:
-  shop_items:
-    status: on
-    targets:
-      - shop: rain
-        item: Clover
-        item_limit: 1000
-      - shop: snow
-        item: Snowdrop
-        item_limit: 300
-      - shop: egg
-        item: CommonEgg
-        item_limit: 1000
-      - shop: thunder
-        item: Milkcap
-        item_limit: 100
-      - shop: dawn
-        item: Ube
-        item_limit: 100
-      - shop: amber
-        item: Marigold
-        item_limit: 5
-      - shop: dawn
-        item: Dawnbreaker
-        item_limit: 500
-      - shop: amber 
-        item: Emberbloom
-        item_limit: 500
-      - shop: egg
-        item: MythicalEgg
-        item_limit: 3
-  weather_pet_teams_rotation:
-    status: on
-    weather_teams:
-      rain:
-        null
-      snow:
-        team_name: Снежный патруль
-      thunder:
-        team_name: Грозовой патруль
-      amber:
-        team_name: Универ патруль
-      dawn:
-        team_name: Даун патруль
-      default_team:
-        team_name: Размерчик
-  situationsip_pet_team_rotation:
-    status: on
-    situationship_teams:
-      on_sell_crops:
-        team_name: Test 
-      on_harvest: 
-        team_name: Test 
-      on_sell_pets:
-        team_name: Test 
+  base_game_path: https://magicgarden.gg/r/             # base path of magic garden web client
+  room_id: ABCD                                         # room ID 
+  user_name: Gorbikov Vadim                             # you username
+  saved_auth_state_path: "data/auth_state.json"         # path to saving auth (no change this)
+bot: 
+  headless_mode: off                                    # In headless mode browser window are not opened
+  directives:
+    shop_items:
+      status: on
+      targets:
+        - shop: rain
+          item: Clover
+          item_limit: 1000
+        - shop: snow
+          item: Snowdrop
+          item_limit: 300
+        - shop: egg
+          item: CommonEgg
+          item_limit: 1000
+        - shop: thunder
+          item: Milkcap
+          item_limit: 100
+        - shop: dawn
+          item: Ube
+          item_limit: 100
+        - shop: amber
+          item: Marigold
+          item_limit: 5
+        - shop: dawn
+          item: Dawnbreaker
+          item_limit: 500
+        - shop: amber 
+          item: Emberbloom
+          item_limit: 500
+        - shop: egg
+          item: MythicalEgg
+          item_limit: 3
+    weather_pet_teams_rotation:
+      status: on
+      weather_teams:
+        rain:
+          null
+        snow:
+          team_name: Снежный патруль
+        thunder:
+          team_name: Грозовой патруль
+        amber:
+          team_name: Универ патруль
+        dawn:
+          team_name: Даун патруль
+        default_team:
+          team_name: Размерчик
+    situationsip_pet_team_rotation:
+      status: on
+      situationship_teams:
+        on_sell_crops:
+          team_name: Test 
+        on_harvest: 
+          team_name: Test 
+        on_sell_pets:
+          team_name: Test 

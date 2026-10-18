@@ -4,16 +4,16 @@ from typing import Optional, Tuple
 
 from game.state import GameState
 from game.commands import CommandProvider
-from config import Config
+from config import BotConf
 
 
 
 class BotDirective(ABC):
 
-    def __init__(self, conf: Config, state: GameState, command: CommandProvider):
+    def __init__(self, conf: BotConf, state: GameState, command: CommandProvider):
         self.game_state: GameState = state
         self.command_provider: CommandProvider = command
-        self.config: Config = conf
+        self.config: BotConf = conf
         self.is_working: asyncio.Event = asyncio.Event()
         self.loop_task: asyncio.Task = None
 

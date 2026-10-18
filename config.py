@@ -125,21 +125,34 @@ class DirectivesConf():
 class AuthConfig():
     user_name: str
     saved_auth_state_path: Path
+    base_game_path: str 
+    room_id: str
+
 
     def __post_init__(self):
         self.saved_auth_state_path = Path(self.saved_auth_state_path)
 
 
+@dataclass 
+class BotConf():
+    headless_mode: bool 
+    directives: DirectivesConf
+
+    def __post_init__(self):
+        if not isinstance(self.directives, DirectivesConf):
+            self.directives = DirectivesConf(**self.directives)
+
+
 @dataclass
 class Config():
     auth: AuthConfig
-    directives: DirectivesConf
+    bot: BotConf
 
     def __post_init__(self):
         if not isinstance(self.auth, AuthConfig):
             self.auth = AuthConfig(**self.auth)
-        if not isinstance(self.directives, DirectivesConf):
-            self.directives = DirectivesConf(**self.directives)
+        if not isinstance(self.bot, BotConf):
+            self.bot = BotConf(**self.bot)
     
     @classmethod
     def loads_from_yaml(cls, path: Union[Path, str]):

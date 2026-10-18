@@ -3,15 +3,15 @@ import asyncio
 from game.state import GameState
 from game.commands import CommandProvider
 from bot.directives import ShopItemsDirecrtive, WeatherPetRotationDirective
-from config import Config
+from config import BotConf
 
 
 
 class Bot():
-    def __init__(self, conf: Config, game_state: GameState, command_provider: CommandProvider):
+    def __init__(self, conf: BotConf, game_state: GameState, command_provider: CommandProvider):
         self.game_state: GameState = game_state
         self.command_provider: CommandProvider = command_provider
-        self.config: Config = conf
+        self.config: BotConf = conf
         self.is_running: asyncio.Event = asyncio.Event()
         self.shop_item_directive = ShopItemsDirecrtive(
             conf=self.config,
