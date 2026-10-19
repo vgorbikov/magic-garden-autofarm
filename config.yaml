@@ -1,10 +1,11 @@
 auth:
   base_game_path: https://magicgarden.gg/r/             # base path of magic garden web client
-  room_id: ABCD                                         # room ID 
+  room_id: GKTQ                                         # room ID 
   user_name: Gorbikov Vadim                             # you username
   saved_auth_state_path: "data/auth_state.json"         # path to saving auth (no change this)
 bot: 
   headless_mode: off                                    # In headless mode browser window are not opened
+  # log_level: debug                                      # debug | info | warning | error
   directives:
     shop_items:
       status: on
@@ -12,6 +13,12 @@ bot:
         - shop: rain
           item: Clover
           item_limit: 1000
+        - shop: tool
+          item: PlanterPot
+          item_limit: 10000
+        - shop: tool 
+          item: WateringCan 
+          item_limit: 198
         - shop: snow
           item: Snowdrop
           item_limit: 300
