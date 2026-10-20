@@ -31,12 +31,12 @@ bot:
         - shop: dawn
           item: Ube
           item_limit: 100
-        - shop: amber
-          item: Marigold
-          item_limit: 5
         - shop: dawn
           item: Dawnbreaker
           item_limit: 500
+        # - shop: dawn 
+        #   item: Dawnbinder
+        #   item_limit: 100
         - shop: amber 
           item: Emberbloom
           item_limit: 500

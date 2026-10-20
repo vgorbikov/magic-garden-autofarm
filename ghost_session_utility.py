@@ -69,4 +69,4 @@ async def run_ghost_sessions(count: int):
     for session in sessions:
         await session.stop_session()
 
-asyncio.run(run_ghost_sessions(5))
+asyncio.run(run_ghost_sessions(4))
