@@ -8,7 +8,7 @@ from jsonpatch import apply_patch
 
 from utils import ReprMixin
 from ws_manager import WSManager
-from game.game_types import ToolId, EggId, Species, PetSpecies, DecorId, Unknown, Shops, ItemType, Weather
+from game.game_types import ToolId, EggId, Species, PetSpecies, DecorId, Unknown, Shops, ItemType, Weather, ObjectType
 
 
 
@@ -263,7 +263,19 @@ class PlantSlot(ReprMixin):
         return None
 
 
-class Plant(ItemWithId):
+
+class MGObject(ReprMixin):
+    def __init__(self, raw_object: Dict):
+        self._object = raw_object
+
+    @property
+    def objectType(self):
+        if "objectType" in self._object.keys():
+            return ObjectType(self._object["objectType"])
+
+
+
+class PlantItem(ItemWithId):
     @property
     def species(self) -> Optional[Species]:
         if "species" in self._item.keys():
@@ -274,7 +286,37 @@ class Plant(ItemWithId):
         if "slots" in self._item.keys():
             return [PlantSlot(s) for s in self._item["slots"]]
         return None
+    
+
+class PlantObject(MGObject):
+    @property
+    def species(self) -> Optional[Species]:
+        if "species" in self._object.keys():
+            return Species(self._object["species"])
         
+    @property
+    def slots(self) -> Optional[List[PlantSlot]]:
+        if "slots" in self._object.keys():
+            return [PlantSlot(s) for s in self._object["slots"]]
+        return None
+        
+
+class EggObject(MGObject):
+    @property
+    def eggId(self) -> EggId:
+        if "eggId" in self._object.keys():
+            return EggId(self._object["eggId"])
+
+    @property
+    def plantedAt(self) -> int:
+        if "plantedAt" in self._object.keys():
+            return int(self._object["plantedAt"])
+    
+    @property
+    def maturedAt(self) -> int:
+        if "maturedAt" in self._object.keys():
+            return int(self._object["maturedAt"])
+
 
 class Pet(ItemWithId):
     @property
@@ -342,6 +384,26 @@ class PetTeam(ReprMixin):
         return [PetTeamMember(m) for m in self._team["members"]]
 
 
+class Produce(ItemWithId):
+    @property
+    def itemType(self) -> ItemType:
+        return ItemType.PRODUCE
+    
+    @property
+    def size(self) -> int:
+        if "size" in self._item.keys():
+            return int(self._item["size"])
+        
+    @property
+    def species(self) -> Species:
+        if "species" in self._item.keys():
+            return Species(self._item["species"])
+
+    @property 
+    def itemUName(self) -> Species:
+        return self.species
+
+
 class Storage(ReprMixin):
     def __init__(self, raw_storage: Dict):
         self.__storage: Dict = raw_storage
@@ -359,16 +421,45 @@ class Storage(ReprMixin):
         return None
 
     @property
-    def items(self) -> Optional[List[Union[Pet, Plant, SeedInInventory, ToolInInventory, RemainedToolInInventory, EggInInventory]]]:
+    def items(self) -> Optional[List[Union[Pet, PlantItem, SeedInInventory, ToolInInventory, RemainedToolInInventory, EggInInventory]]]:
         if "items" in self.__storage.keys():
             pets = [Pet(p) for p in self.__storage["items"] if p["itemType"]==ItemType.PET.value]
-            plants = [Plant(p) for p in self.__storage["items"] if p["itemType"]==ItemType.PLANT.value]
+            plants = [PlantItem(p) for p in self.__storage["items"] if p["itemType"]==ItemType.PLANT.value]
             seeds = [SeedInInventory(s) for s in self.__storage["items"] if s["itemType"]==ItemType.SEED.value]
             eggs = [EggInInventory(s) for s in self.__storage["items"] if s["itemType"]==ItemType.EGG.value]
             tools = [ToolInInventory(p) for p in self.__storage["items"] if p["itemType"]==ItemType.TOOL.value and "remainingActiveSeconds" not in p.keys()]
             remained_tools = [RemainedToolInInventory(p) for p in self.__storage["items"] if p["itemType"]==ItemType.TOOL.value and "remainingActiveSeconds" in p.keys()]
             return pets + plants + seeds + tools + remained_tools + eggs
         return None
+
+
+class Tile(ReprMixin):
+    def __init__(self, tile_no: int, raw_tile: Dict):
+        self.__tine_no = tile_no
+        self.__tile = raw_tile
+
+    @property
+    def tile_no(self) -> int:
+        return self.__tine_no
+    
+    @property
+    def object_in_tile(self) -> Union[EggObject, PlantObject, None]:
+        obj_type = ObjectType(self.__tile["objectType"])
+        if obj_type == ObjectType.PLANT:
+            return PlantObject(self.__tile)
+        if obj_type == ObjectType.EGG:
+            return EggObject(self.__tile)
+        return MGObject(self.__tile)
+
+
+class Garden(ReprMixin):
+    def __init__(self, raw_garden: Dict):
+        self.__garden = raw_garden
+
+    @property
+    def gardenTiles(self) -> List[Tile]:
+        if "tileObjects" in self.__garden.keys():
+            return [Tile(int(i[0]), i[1]) for i in self.__garden["tileObjects"].items()]
 
 
 class Player(ReprMixin):
@@ -393,18 +484,24 @@ class Player(ReprMixin):
         if "isConnected" in self.__player.keys():
             return self.__player["isConnected"]
         return None
+    
+    @property
+    def garden(self) -> Garden:
+        if "garden" in self.__slots["data"].keys():
+            return Garden(self.__slots["data"]["garden"])
 
     @property
-    def inventory(self) -> List[Union[Plant, Pet, SeedInInventory, ToolInInventory, RemainedToolInInventory, EggInInventory]]:
+    def inventory(self) -> List[Union[PlantItem, Pet, SeedInInventory, ToolInInventory, RemainedToolInInventory, EggInInventory, Produce]]:
         if "inventory" in self.__slots["data"].keys():
             if "items" in self.__slots["data"]["inventory"].keys():
                 pets = [Pet(p) for p in self.__slots["data"]["inventory"]["items"] if p["itemType"]==ItemType.PET.value]
-                plants = [Plant(p) for p in self.__slots["data"]["inventory"]["items"] if p["itemType"]==ItemType.PLANT.value]
+                plants = [PlantItem(p) for p in self.__slots["data"]["inventory"]["items"] if p["itemType"]==ItemType.PLANT.value]
                 seeds = [SeedInInventory(s) for s in self.__slots["data"]["inventory"]["items"] if s["itemType"]==ItemType.SEED.value]
                 eggs = [EggInInventory(s) for s in self.__slots["data"]["inventory"]["items"] if s["itemType"]==ItemType.EGG.value]
                 tools = [ToolInInventory(p) for p in self.__slots["data"]["inventory"]["items"] if p["itemType"]==ItemType.TOOL.value and "remainingActiveSeconds" not in p.keys()]
                 remained_tools = [RemainedToolInInventory(p) for p in self.__slots["data"]["inventory"]["items"] if p["itemType"]==ItemType.TOOL.value and "remainingActiveSeconds" in p.keys()]
-                return plants + pets + seeds + tools + remained_tools + eggs
+                produce = [Produce(p) for p in self.__slots["data"]["inventory"]["items"] if p["itemType"]==ItemType.PRODUCE.value]
+                return plants + pets + seeds + tools + remained_tools + eggs + produce
             
         return None
 
@@ -431,6 +528,11 @@ class Player(ReprMixin):
     @property
     def petTeams(self) -> List[PetTeam]:
         return [PetTeam(t) for t in self.__slots["data"]["petTeams"]]
+    
+    @property
+    def active_pets(self) -> List[Pet]:
+        if "petSlots" in self.__slots["data"]:
+            return [Pet(p) for p in self.__slots["data"]["petSlots"]]
 
 
 class GameState(ReprMixin):

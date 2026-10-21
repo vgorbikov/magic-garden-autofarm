@@ -11,13 +11,13 @@ from ws_manager import WSManager
 
 
 class ACommand(ABC):
-    def __init__(self, type: CommandType):
+    def __init__(self, type: CommandType, result_baseclass):
         self.requestId = str(uuid4())
         self.commandSequence = 0
         self.comand_type: CommandType = type
         self.result: ACommandResult = None
         self._future: asyncio.Future = asyncio.get_running_loop().create_future()
-        self.result_baseclass = ACommandResult
+        self.result_baseclass = result_baseclass
 
 
     def set_result(self, raw_result: Dict):
@@ -60,12 +60,11 @@ class PurchaseShopItemResult(ACommandResult):
 
 class PurchaseShopItem(ACommand):
     def __init__(self, shop: Shops, itemType: ItemType, item: Union[ToolId, EggId, Species], count: int = 1):
-        super().__init__(CommandType.PURCHASE_SHOP_ITEM)
+        super().__init__(CommandType.PURCHASE_SHOP_ITEM, PurchaseShopItemResult)
         self.shop = shop
         self.item_type = itemType
         self.item = item
         self.count = count
-        self.result_baseclass = PurchaseShopItemResult
 
     def build_command(self):
         item_specs = {
@@ -94,14 +93,14 @@ class PurchaseShopItem(ACommand):
         }
         return json.dumps(command)
     
-
+@dataclass
 class ApplyPetTeamResult(ACommandResult):
     commandType: CommandType = CommandType.APPLY_PET_TEAM
 
 
 class ApplyPetTeam(ACommand):
     def __init__(self, teamId: str):
-        super().__init__(type=CommandType.APPLY_PET_TEAM)
+        super().__init__(CommandType.APPLY_PET_TEAM, ApplyPetTeamResult)
         self.team_id = teamId
 
     def build_command(self):
@@ -119,6 +118,72 @@ class ApplyPetTeam(ACommand):
             }
         }
         return json.dumps(command)
+    
+
+@dataclass
+class HarvestCropResult(ACommandResult):
+    itemGains: str = ''
+    commandType = CommandType.HARVEST_CROP
+
+
+class HarvestCrop(ACommand):
+    def __init__(self, slot: int, slotIndex: int, cropItemId: str):
+        super().__init__(CommandType.HARVEST_CROP, HarvestCropResult)
+        self.slot = slot
+        self.slotIndex = slotIndex
+        self.crop_item_id = cropItemId
+
+
+    def build_command(self):
+        command = {
+            "type": self.comand_type.value,
+            "slot": self.slot,
+            "slotsIndex": self.slotIndex,
+            "cropItemId": self.crop_item_id
+        }
+        return json.dumps(
+            {
+                "scopePath": [
+                    "Room",
+                    "Quinoa"
+                ],
+                "type": "QuinoaCommand",
+                "requestId": self.requestId,
+                "commandSequence": self.commandSequence,
+                "command": command
+            }
+        )
+
+@dataclass
+class FeedPetResult(ACommandResult):
+    commandType = CommandType.FEED_PET
+
+
+class FeedPet(ACommand):
+    def __init__(self, pet_item_id: str, crop_item_id: str):
+        super().__init__(CommandType.FEED_PET, FeedPetResult)
+        self.pet_id = pet_item_id
+        self.crop_item_id = crop_item_id
+
+    def build_command(self):
+        command = {
+            "type": self.comand_type.value,
+            "petItemId": self.pet_id,
+            "cropItemId": self.crop_item_id
+        }
+        return json.dumps(
+            {
+                "scopePath": [
+                    "Room",
+                    "Quinoa"
+                ],
+                "type": "QuinoaCommand",
+                "requestId": self.requestId,
+                "commandSequence": self.commandSequence,
+                "command": command
+            }
+        )
+
 
 
 class CommandProvider():

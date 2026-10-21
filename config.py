@@ -4,7 +4,7 @@ from typing import Union, List, Optional
 
 import yaml
 
-from game.game_types import ToolId, EggId, Species, Shops, Unknown
+from game.game_types import PetSpecies, ToolId, EggId, Species, Shops, Unknown
 
 
 
@@ -105,12 +105,34 @@ class SituationshipPetRotationDirectiveConf():
         if not isinstance(self.situationship_teams, SituationshipTeamsConf):
             self.situationship_teams = SituationshipTeamsConf(**self.situationship_teams)
 
+@dataclass
+class PetDiet:
+    pet: PetSpecies
+    diet: List[Species]
+
+    def __post_init__(self):
+        if not isinstance(self.pet, PetSpecies):
+            self.pet = PetSpecies(self.pet)
+        if not isinstance(self.diet[0], Species):
+            self.diet = [Species(d) for d in self.diet]
+
+
+@dataclass
+class FeedingActivePetsDirectiveConf():
+    status: bool 
+    pet_priority_diet: List[PetDiet]
+
+    def __post_init__(self):
+        if not isinstance(self.pet_priority_diet[0], PetDiet):
+            self.pet_priority_diet = [PetDiet(**d) for d in self.pet_priority_diet]
+
 
 @dataclass
 class DirectivesConf():
     shop_items: ShopItemsDirectiveConf
     weather_pet_teams_rotation: WeatherPetTeamRotationDirectiveConf
     situationsip_pet_team_rotation: SituationshipPetRotationDirectiveConf
+    feeding_active_pets: FeedingActivePetsDirectiveConf
 
     def __post_init__(self):
         if not isinstance(self.shop_items, ShopItemsDirectiveConf):
@@ -119,6 +141,8 @@ class DirectivesConf():
             self.weather_pet_teams_rotation = WeatherPetTeamRotationDirectiveConf(**self.weather_pet_teams_rotation)
         if not isinstance(self.situationsip_pet_team_rotation, SituationshipPetRotationDirectiveConf):
             self.situationsip_pet_team_rotation = SituationshipPetRotationDirectiveConf(**self.situationsip_pet_team_rotation)
+        if not isinstance(self.feeding_active_pets, FeedingActivePetsDirectiveConf):
+            self.feeding_active_pets = FeedingActivePetsDirectiveConf(**self.feeding_active_pets)
 
 
 @dataclass

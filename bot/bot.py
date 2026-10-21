@@ -2,7 +2,7 @@ import asyncio
 
 from game.state import GameState
 from game.commands import CommandProvider
-from bot.directives import ShopItemsDirecrtive, WeatherPetRotationDirective
+from bot.directives import ShopItemsDirecrtive, WeatherPetRotationDirective, FeedingActivePets
 from config import BotConf
 
 
@@ -23,6 +23,11 @@ class Bot():
             state=self.game_state,
             command=self.command_provider
         )
+        self.feeding_active_pets_directive = FeedingActivePets(
+            conf=self.config,
+            state=self.game_state,
+            command=self.command_provider
+        )
         
 
     async def run(self):
@@ -38,17 +43,26 @@ class Bot():
                 print('<i> shop items directive is on')
             else:
                 print(f'<E> Fail to run shop item directive: {msg}')
-        if self.config.directives.weather_pet_teams_rotation:
+        if self.config.directives.weather_pet_teams_rotation.status:
             ok, msg = self.weather_pet_rotation_directive.ok()
             if ok:
                 self.weather_pet_rotation_directive.on()
                 print('<i> weather pet teams rotation directive is on')
             else:
                 print(f'<E> Fail to run weather pet teams rotation directive: {msg}')
+        if self.config.directives.feeding_active_pets.status:
+            ok, msg = self.feeding_active_pets_directive.ok()
+            if ok:
+                self.feeding_active_pets_directive.on()
+                print('<i> feeding active pets directive is on')
+            else:
+                print(f'<E> Fail to run feeding active pets directive: {msg}')
 
 
     def stop(self):
         if self.config.directives.shop_items.status:
             self.shop_item_directive.off()
-        if self.config.directives.weather_pet_teams_rotation:
+        if self.config.directives.weather_pet_teams_rotation.status:
             self.weather_pet_rotation_directive.off()
+        if self.config.directives.feeding_active_pets.status:
+            self.feeding_active_pets_directive.off()

@@ -20,6 +20,10 @@ Bot monitor a weather and set pet team which you select to this weather.
 
 >Pet team must have a name, to can be selected
 
+### Feeding active pets (beta)
+
+Bot monitor level of hunger of active pets and feeding it. If you don't have vrops in you inventory, bot harvest it.
+
 ## Configuration
 
 All directives configurating in `config.yaml` file. You can see emy example in repo.
@@ -44,7 +48,6 @@ My plans to upgrade the Bot:
 - Do useful console interface
 - Adding reloading on errors, game updates and any incedents
 - Adding directives:
-  - Pet feeding
   - Farm dust with common eggs growing
   - Selective crop harvesting and selling
   - Situationship pet teams rotation

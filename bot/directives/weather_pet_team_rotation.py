@@ -13,7 +13,9 @@ class WeatherPetRotationDirective(BotDirective):
             Weather.CLEAR: self.config.directives.weather_pet_teams_rotation.weather_teams.default_team,
             Weather.FROST: self.config.directives.weather_pet_teams_rotation.weather_teams.snow,
             Weather.RAIN: self.config.directives.weather_pet_teams_rotation.weather_teams.rain,
-            Weather.THUNDERSTORM: self.config.directives.weather_pet_teams_rotation.weather_teams.thunder
+            Weather.THUNDERSTORM: self.config.directives.weather_pet_teams_rotation.weather_teams.thunder,
+            Weather.DAWN: self.config.directives.weather_pet_teams_rotation.weather_teams.dawn,
+            Weather.AMBER_MOON: self.config.directives.weather_pet_teams_rotation.weather_teams.amber
         }
 
     async def _directive_loop(self):

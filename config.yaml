@@ -8,7 +8,7 @@ bot:
   # log_level: debug                                      # debug | info | warning | error
   directives:
     shop_items:
-      status: on
+      status: off
       targets:
         - shop: rain
           item: Clover
@@ -44,10 +44,10 @@ bot:
           item: MythicalEgg
           item_limit: 3
     weather_pet_teams_rotation:
-      status: on
+      status: off
       weather_teams:
         rain:
-          null
+          team_name: Универ патруль
         snow:
           team_name: Снежный патруль
         thunder:
@@ -58,8 +58,15 @@ bot:
           team_name: Даун патруль
         default_team:
           team_name: Размерчик
+    feeding_active_pets:
+      status: on 
+      pet_priority_diet:
+        - pet: Butterfly 
+          diet: [Lemon, Grape]
+        - pet: Bat 
+          diet: [Cabbage]
     situationsip_pet_team_rotation:
-      status: on
+      status: off
       situationship_teams:
         on_sell_crops:
           team_name: Test 
