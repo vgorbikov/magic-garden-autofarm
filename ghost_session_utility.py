@@ -5,7 +5,7 @@ from playwright.async_api import async_playwright, WebSocketRoute, BrowserContex
 
 from game.state import GameState
 from ws_manager import WSManager
-from game.commands import CommandProvider
+from game.commands.commands import CommandProvider
 from config import Config
 from bot.bot import Bot
 

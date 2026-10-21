@@ -8,7 +8,7 @@ bot:
   # log_level: debug                                      # debug | info | warning | error
   directives:
     shop_items:
-      status: off
+      status: on
       targets:
         - shop: rain
           item: Clover
@@ -44,7 +44,7 @@ bot:
           item: MythicalEgg
           item_limit: 3
     weather_pet_teams_rotation:
-      status: off
+      status: on
       weather_teams:
         rain:
           team_name: Универ патруль
