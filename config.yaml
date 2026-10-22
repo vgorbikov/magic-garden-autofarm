@@ -34,9 +34,15 @@ bot:
         - shop: dawn
           item: Dawnbreaker
           item_limit: 500
-        # - shop: dawn 
-        #   item: Dawnbinder
-        #   item_limit: 100
+        - shop: snow 
+          item: ChilledPotion
+          item_limit: 200
+        - shop: dawn 
+          item: DawnCelestial
+          item_limit: 1
+        - shop: thunder
+          item: ThunderCelestial
+          item_limit: 3
         - shop: amber 
           item: Emberbloom
           item_limit: 500
@@ -59,12 +65,15 @@ bot:
         default_team:
           team_name: Размерчик
     feeding_active_pets:
-      status: on 
+      status: on
       pet_priority_diet:
         - pet: Butterfly 
           diet: [Lemon, Grape]
         - pet: Bat 
           diet: [Cabbage]
+    dust_farming:
+      status: on
+      eggs_to_use: [CommonEgg]
     situationsip_pet_team_rotation:
       status: off
       situationship_teams:

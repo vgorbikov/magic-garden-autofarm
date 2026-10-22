@@ -53,6 +53,7 @@ async def main():
         await bot.run()
 
         await asyncio.to_thread(input, "")
+        game_state.save_raw_state('./data/gss_test.json')
 
         bot.stop()
 

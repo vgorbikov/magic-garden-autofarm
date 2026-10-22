@@ -444,6 +444,8 @@ class Tile(ReprMixin):
     
     @property
     def object_in_tile(self) -> Union[EggObject, PlantObject, None]:
+        if self.__tile is None:
+            return None
         obj_type = ObjectType(self.__tile["objectType"])
         if obj_type == ObjectType.PLANT:
             return PlantObject(self.__tile)
@@ -459,7 +461,9 @@ class Garden(ReprMixin):
     @property
     def gardenTiles(self) -> List[Tile]:
         if "tileObjects" in self.__garden.keys():
-            return [Tile(int(i[0]), i[1]) for i in self.__garden["tileObjects"].items()]
+            tiles_dict = self.__garden["tileObjects"]
+            raw_tiles = {i:tiles_dict[str(i)] if str(i) in tiles_dict.keys() else None for i in range(200)}
+            return [Tile(int(i[0]), i[1]) for i in raw_tiles.items()]
 
 
 class Player(ReprMixin):

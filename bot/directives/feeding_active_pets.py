@@ -14,7 +14,7 @@ class FeedingActivePets(BotDirective):
 
     async def __try_harvest_crop(self, spec: Species) -> Optional[str]:
         now_ms = ms = int(time.time() * 1000)
-        tiles = self.game_state.currentPlayer.garden.gardenTiles
+        tiles = [t for t in self.game_state.currentPlayer.garden.gardenTiles if not t.object_in_tile is None]
         plant_tiles = [t for t in tiles if t.object_in_tile.objectType == ObjectType.PLANT]
         if len(plant_tiles) == 0:
             print(f'[/feeding_active_pet] [/harvest] No plant tiles in you garden')

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional, Union, Dict, Tuple
 
+from game import commands
 from game.game_types import CommandType, Species, ToolId, EggId, DecorId, ItemType, Shops
 from game.commands.base import ACommand, ACommandResult
 
@@ -100,5 +101,55 @@ class FeedPet(ACommand):
         return command
 
 
+@dataclass
+class GrowEggResult(ACommandResult):
+    commandType = CommandType.GROW_EGG
 
 
+class GrowEgg(ACommand):
+    def __init__(self, slot: int, egg_id: EggId):
+        super().__init__(CommandType.GROW_EGG, GrowEggResult)
+        self.slot = slot 
+        self.egg_id = egg_id
+
+    def _build_command(self) -> Dict:
+        command = {
+            "type": self.comand_type.value,
+            "slot": self.slot,
+            "eggId": self.egg_id.value
+        }
+        return command
+
+
+@dataclass
+class HatchEggResult(ACommandResult):
+    commandType = CommandType.HATCH_EGG
+
+class HatchEgg(ACommand):
+    def __init__(self, slot: int):
+        super().__init__(CommandType.HATCH_EGG, HatchEggResult)
+        self.slot = slot
+
+    def _build_command(self):
+        return {
+            "type": self.comand_type.value,
+            "slot": self.slot
+        }
+
+
+@dataclass
+class SellPetResult(ACommandResult):
+    commandType = CommandType.SELL_PET
+    currencyGains: str = ''
+
+
+class SellPet(ACommand):
+    def __init__(self, item_id: str):
+        super().__init__(CommandType.SELL_PET, SellPetResult)
+        self.item_id = item_id
+
+    def _build_command(self):
+        return {
+            "type": self.comand_type.value,
+            "itemId": self.item_id
+        }

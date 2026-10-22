@@ -24,6 +24,10 @@ Bot monitor a weather and set pet team which you select to this weather.
 
 Bot monitor level of hunger of active pets and feeding it. If you don't have vrops in you inventory, bot harvest it.
 
+### Dust farming (beta)
+
+Bot grows eggs selected you, hatching it and sell pets.
+
 ## Configuration
 
 All directives configurating in `config.yaml` file. You can see emy example in repo.
@@ -48,6 +52,5 @@ My plans to upgrade the Bot:
 - Do useful console interface
 - Adding reloading on errors, game updates and any incedents
 - Adding directives:
-  - Farm dust with common eggs growing
   - Selective crop harvesting and selling
   - Situationship pet teams rotation

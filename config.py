@@ -128,11 +128,22 @@ class FeedingActivePetsDirectiveConf():
 
 
 @dataclass
+class DustFarmingDirectiveConf():
+    status: bool 
+    eggs_to_use: List[EggId]
+
+    def __post_init__(self):
+        if not isinstance(self.eggs_to_use[0], EggId):
+            self.eggs_to_use = [EggId(e) for e in self.eggs_to_use]
+
+
+@dataclass
 class DirectivesConf():
     shop_items: ShopItemsDirectiveConf
     weather_pet_teams_rotation: WeatherPetTeamRotationDirectiveConf
     situationsip_pet_team_rotation: SituationshipPetRotationDirectiveConf
     feeding_active_pets: FeedingActivePetsDirectiveConf
+    dust_farming: DustFarmingDirectiveConf
 
     def __post_init__(self):
         if not isinstance(self.shop_items, ShopItemsDirectiveConf):
@@ -143,6 +154,8 @@ class DirectivesConf():
             self.situationsip_pet_team_rotation = SituationshipPetRotationDirectiveConf(**self.situationsip_pet_team_rotation)
         if not isinstance(self.feeding_active_pets, FeedingActivePetsDirectiveConf):
             self.feeding_active_pets = FeedingActivePetsDirectiveConf(**self.feeding_active_pets)
+        if not isinstance(self.dust_farming, DustFarmingDirectiveConf):
+            self.dust_farming = DustFarmingDirectiveConf(**self.dust_farming)
 
 
 @dataclass

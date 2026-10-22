@@ -2,7 +2,7 @@ import asyncio
 
 from game.state import GameState
 from game.commands import CommandProvider
-from bot.directives import ShopItemsDirecrtive, WeatherPetRotationDirective, FeedingActivePets
+from bot.directives import ShopItemsDirecrtive, WeatherPetRotationDirective, FeedingActivePets, Dustfarming
 from config import BotConf
 
 
@@ -24,6 +24,11 @@ class Bot():
             command=self.command_provider
         )
         self.feeding_active_pets_directive = FeedingActivePets(
+            conf=self.config,
+            state=self.game_state,
+            command=self.command_provider
+        )
+        self.dust_framing = Dustfarming(
             conf=self.config,
             state=self.game_state,
             command=self.command_provider
@@ -57,6 +62,13 @@ class Bot():
                 print('<i> feeding active pets directive is on')
             else:
                 print(f'<E> Fail to run feeding active pets directive: {msg}')
+        if self.config.directives.dust_farming.status:
+            ok, msg = self.dust_framing.ok()
+            if ok:
+                self.dust_framing.on()
+                print('<i> dust farming directive is on')
+            else:
+                print(f'<E> Fail to run dust farming directive: {msg}')
 
 
     def stop(self):
@@ -66,3 +78,5 @@ class Bot():
             self.weather_pet_rotation_directive.off()
         if self.config.directives.feeding_active_pets.status:
             self.feeding_active_pets_directive.off()
+        if self.config.directives.dust_farming.status:
+            self.dust_framing.off()
