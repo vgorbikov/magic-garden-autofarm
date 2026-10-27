@@ -4,7 +4,7 @@ from typing import Union, List, Optional
 
 import yaml
 
-from game.game_types import PetSpecies, ToolId, EggId, Species, Shops, Unknown
+from game.game_types import PetSpecies, ToolId, EggId, Species, Shops, Unknown, DecorId
 
 
 
@@ -26,6 +26,8 @@ class ShopItemsDirectiveTarget():
                 self.item = EggId(self.item)
             elif self.item in [m.value for m in Species]:
                 self.item = Species(self.item)
+            elif self.item in [m.value for m in DecorId]:
+                self.item = DecorId(self.item)
             else:
                 self.item = Unknown.UNKNOWN
 

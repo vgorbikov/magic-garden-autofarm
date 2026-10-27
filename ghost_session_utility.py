@@ -1,13 +1,10 @@
 import asyncio
 from typing import Dict, List
 
-from playwright.async_api import async_playwright, WebSocketRoute, BrowserContext
+from playwright.async_api import async_playwright
 
-from game.state import GameState
-from ws_manager import WSManager
-from game.commands.commands import CommandProvider
 from config import Config
-from bot.bot import Bot
+
 
 
 STEALTH_SCRIPT = """
@@ -28,7 +25,7 @@ class GhostSession():
     async def __session(self):
         async with async_playwright() as playwright:
             self.__browser = await playwright.chromium.launch(
-                headless=True, 
+                headless=False, 
                 args=[
                     "--enable-gpu",
                     "--ignore-gpu-blocklist",
@@ -69,4 +66,4 @@ async def run_ghost_sessions(count: int):
     for session in sessions:
         await session.stop_session()
 
-asyncio.run(run_ghost_sessions(4))
+asyncio.run(run_ghost_sessions(5))

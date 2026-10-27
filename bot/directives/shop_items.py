@@ -3,7 +3,7 @@ from typing import Optional, Tuple
 
 from bot.directives.bot_directive import BotDirective
 from game.commands import PurchaseShopItem
-from game.game_types import ToolId, Species, EggId, Shops, Unknown
+from game.game_types import DecorId, ToolId, Species, EggId, Shops, Unknown
 
 
 
@@ -15,8 +15,8 @@ class ShopItemsDirecrtive(BotDirective):
                 break 
             print('[/item_shoping] directive running...')
             for target in self.config.directives.shop_items.targets:
-                target_item_in_player_inventory_filter = [i for i in self.game_state.currentPlayer.inventory if i.itemUName==target.item]
-                target_item_in_player_storages_filter = [i for s in self.game_state.currentPlayer.storages for i in s.items if i.itemUName==target.item]
+                target_item_in_player_inventory_filter = [i for i in self.game_state.currentPlayer.inventory if i.itemUName==target.item and hasattr(i, "quantity")]
+                target_item_in_player_storages_filter = [i for s in self.game_state.currentPlayer.storages for i in s.items if i.itemUName==target.item and hasattr(i, "quantity")]
                 await asyncio.sleep(0.1)
                 total_count = sum([i.quantity for i in target_item_in_player_inventory_filter] + [i.quantity for i in target_item_in_player_storages_filter])
                 await asyncio.sleep(0.1)
@@ -24,11 +24,17 @@ class ShopItemsDirecrtive(BotDirective):
                     if total_count >= target.item_limit:
                         continue
                 target_shop_filter = [s for s in self.game_state.shops if target.shop==s.shopName]
+                if len(target_shop_filter) == 0:
+                    print(f'[/item_shoping] Cant find shop {target.shop.value}')
+                    continue
                 await asyncio.sleep(0.1)
                 target_shop = target_shop_filter[0]
                 if target_shop.restockId is None:
                     continue 
                 target_item_filter = [i for i in target_shop.inventory if i.itemUName==target.item]
+                if len(target_item_filter) == 0:
+                    print(f'[/item_shoping] Cant find item {target.item.value} in {target.shop.value} shop')
+                    continue
                 await asyncio.sleep(0.1)
                 target_item = target_item_filter[0]
                 if target_item.currentUserStock == 0:
@@ -58,6 +64,6 @@ class ShopItemsDirecrtive(BotDirective):
             target = directive_settings.targets[target_no]
             if target.shop == Shops.UNKNOWN:
                 return False, f'Target {target_no} invalid. Shop is unknown.'
-            if target.item in (ToolId.UNKNOWN, EggId.UNKNOWN, Species.UNKNOWN, Unknown.UNKNOWN):
+            if target.item in (ToolId.UNKNOWN, EggId.UNKNOWN, Species.UNKNOWN, DecorId.UNKNOWN, Unknown.UNKNOWN):
                 return False, f'Target {target_no} invalid. Item name unknown.'
         return True, None

@@ -58,7 +58,7 @@ class FeedingActivePets(BotDirective):
                 print(f'[/feeding_active_pet] Dont have hunger pets')
                 continue
             pet_diets = self.config.directives.feeding_active_pets.pet_priority_diet
-            for pet in active_pets:
+            for pet in hunger_pets_filter:
                 pet_diet_filter = [d for d in pet_diets if d.pet==pet.petSpecies]
                 if len(pet_diet_filter) == 0:
                     print(f'[/feeding_active_pet] No diet selected for {pet.petSpecies.value}')

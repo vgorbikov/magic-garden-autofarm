@@ -4,7 +4,7 @@ auth:
   user_name: Gorbikov Vadim                             # you username
   saved_auth_state_path: "data/auth_state.json"         # path to saving auth (no change this)
 bot: 
-  headless_mode: off                                    # In headless mode browser window are not opened
+  headless_mode: off                                     # In headless mode browser window are not opened
   # log_level: debug                                      # debug | info | warning | error
   directives:
     shop_items:
@@ -13,42 +13,45 @@ bot:
         - shop: rain
           item: Clover
           item_limit: 1000
+        - shop: spooky
+          item: SpookyEgg
+          item_limit: 10
         - shop: tool
           item: PlanterPot
           item_limit: 10000
-        - shop: tool 
-          item: WateringCan 
-          item_limit: 198
+        # - shop: tool 
+        #   item: WateringCan 
+        #   item_limit: 198
         - shop: snow
           item: Snowdrop
           item_limit: 300
         - shop: egg
           item: CommonEgg
           item_limit: 1000
-        - shop: thunder
-          item: Milkcap
-          item_limit: 100
-        - shop: dawn
-          item: Ube
-          item_limit: 100
-        - shop: dawn
-          item: Dawnbreaker
-          item_limit: 500
+        - shop: egg
+          item: UncommonEgg
+          item_limit: 1000
         - shop: snow 
           item: ChilledPotion
           item_limit: 200
         - shop: dawn 
           item: DawnCelestial
-          item_limit: 1
+          item_limit: 3
         - shop: thunder
           item: ThunderCelestial
-          item_limit: 3
+          item_limit: 1
         - shop: amber 
           item: Emberbloom
           item_limit: 500
         - shop: egg
           item: MythicalEgg
           item_limit: 3
+        - shop: seed 
+          item: Pumpkin
+          item_limit: 30
+        - shop: spooky
+          item: DeadlyNightshade
+          item_limit: 8
     weather_pet_teams_rotation:
       status: on
       weather_teams:
@@ -71,8 +74,18 @@ bot:
           diet: [Lemon, Grape]
         - pet: Bat 
           diet: [Cabbage]
+        - pet: Turtle 
+          diet: [Pepper]
+        - pet: Worm 
+          diet: [Strawberry]
+        - pet: Snail 
+          diet: [Tomato]
+        - pet: Squirrel
+          diet: [Banana]
+        - pet: Stoat 
+          diet: [Pepper]
     dust_farming:
-      status: on
+      status: off
       eggs_to_use: [CommonEgg]
     situationsip_pet_team_rotation:
       status: off

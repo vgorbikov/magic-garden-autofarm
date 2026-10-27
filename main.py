@@ -32,7 +32,13 @@ async def main():
     bot = Bot(conf=config.bot, game_state=game_state, command_provider=command_provider)
 
     async with async_playwright() as playwright:
-        browser = await playwright.chromium.launch(headless=config.bot.headless_mode)
+        browser = await playwright.chromium.launch(
+            headless=config.bot.headless_mode,
+            args=[
+                    "--enable-gpu",
+                    "--ignore-gpu-blocklist",
+                ]
+        )
 
         context = await browser.new_context(
             storage_state="./data/auth_state.json",

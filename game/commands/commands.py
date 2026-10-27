@@ -25,7 +25,8 @@ class PurchaseShopItem(ACommand):
         item_specs = {
             ToolId: "toolId",
             EggId: "eggId",
-            Species: "species"
+            Species: "species",
+            DecorId: "decorId"
         }
         command =  {
             "type": self.comand_type.value,

@@ -127,6 +127,18 @@ class Egg(Item):
     def itemUName(self) -> EggId:
         return self.eggId
     
+class Decor(Item):
+    @property
+    def decorId(self) -> DecorId:
+        if "decorId" in self._item.keys():
+            return DecorId(self._item["decorId"])
+        return None 
+    
+    @property
+    def itemUName(self) -> DecorId:
+        return self.decorId
+
+    
 class EggInInventory(Egg):
     @property
     def quantity(self) -> Optional[int]:
@@ -136,6 +148,11 @@ class EggInInventory(Egg):
 
 
 class SeedInShop(Seed, AShopItem):
+    def __init__(self, raw_item: Dict, current_user_purchases: ShopPurchases):
+        super().__init__(raw_item=raw_item, current_user_purchases=current_user_purchases)
+
+
+class DecorInShop(Decor, AShopItem):
     def __init__(self, raw_item: Dict, current_user_purchases: ShopPurchases):
         super().__init__(raw_item=raw_item, current_user_purchases=current_user_purchases)
 
@@ -154,7 +171,7 @@ class ToolInInventory(Tool):
         if "quantity" in self._item.keys():
             return int(self._item["quantity"])
         return None
-    
+
 
 class RemainedTool(Tool):
     @property
@@ -198,7 +215,8 @@ class Shop(ReprMixin):
             seeds = [SeedInShop(s, user_purchases) for s in all_items if s["itemType"]==ItemType.SEED.value]
             tools = [ToolInShop(s, user_purchases) for s in all_items if s["itemType"]==ItemType.TOOL.value]
             eggs = [EggInShop(s, user_purchases) for s in all_items if s["itemType"]==ItemType.EGG.value]
-            return seeds + tools + eggs
+            decor = [DecorInShop(s, user_purchases) for s in all_items if s["itemType"]==ItemType.DECOR.value]
+            return seeds + tools + eggs + decor
         return None
 
     @property
